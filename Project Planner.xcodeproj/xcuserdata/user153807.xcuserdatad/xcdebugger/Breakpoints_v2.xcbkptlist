@@ -86,32 +86,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Project Planner/AddProjectController.swift"
-            timestampString = "579069009.630427"
+            filePath = "Project Planner/EditProjectController.swift"
+            timestampString = "579129413.925438"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "111"
-            endingLineNumber = "111"
-            landmarkName = "insertEvent(store:project:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Project Planner/AddProjectController.swift"
-            timestampString = "579069009.6311311"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "88"
-            endingLineNumber = "88"
-            landmarkName = "insertEvent(store:project:)"
+            startingLineNumber = "104"
+            endingLineNumber = "104"
+            landmarkName = "SaveButton_OnClick(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

@@ -51,7 +51,10 @@ class AddProjectController: UIViewController {
         
             switch EKEventStore.authorizationStatus(for: .event) {
             case .authorized:
-                insertEvent(store: eventStore, project: newProject)
+                let insertedEvent = insertEvent(store: eventStore, project: newProject)
+                if insertedEvent.title != nil{
+                    newProject.calenderId = UUID(uuidString: insertedEvent.calendarItemIdentifier)
+                }
             case .denied:
                 let alert = UIAlertController(title: "Error",message: "Permission denied to add calendar entry",preferredStyle: .alert)
                 let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
@@ -62,7 +65,10 @@ class AddProjectController: UIViewController {
                 eventStore.requestAccess(to: .event, completion:
                     {[weak self] (granted: Bool, error: Error?) -> Void in
                         if granted {
-                            self!.insertEvent(store: eventStore, project: newProject)
+                            let insertedEvent = self!.insertEvent(store: eventStore, project: newProject)
+                            if insertedEvent.title != nil{
+                                newProject.calenderId = UUID(uuidString: insertedEvent.calendarItemIdentifier)
+                            }
                         } else {
                             let alert = UIAlertController(title: "Error",message: "Permission denied to add calendar entry",preferredStyle: .alert)
                             let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
@@ -86,7 +92,7 @@ class AddProjectController: UIViewController {
             , completion: nil)        
     }
     
-    func insertEvent(store: EKEventStore, project: Project){
+    func insertEvent(store: EKEventStore, project: Project) -> EKEvent{
         let calendars = store.calendars(for: .event)
         
         for calendar in calendars {
@@ -98,7 +104,6 @@ class AddProjectController: UIViewController {
                 // 4
                 let event = EKEvent(eventStore: store)
                 event.calendar = calendar
-                
                 event.title = project.name
                 event.startDate = project.dueDate
                 event.endDate = project.dueDate
@@ -108,16 +113,17 @@ class AddProjectController: UIViewController {
                 // 5
                 do {
                     try store.save(event, span: .thisEvent)
+                    return event
                 }
                 catch {
                     let alert = UIAlertController(title: "Error",message: "An error occurred adding a calendar entry", preferredStyle: .alert)
                     let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
                     alert.addAction(OKAction)
                     self.present(alert, animated: true, completion: nil)
-                    return
                 }
             }
         }
+        return EKEvent()
     }
     
     @IBAction func CancelButton_OnClick(_ sender: UIButton) {
