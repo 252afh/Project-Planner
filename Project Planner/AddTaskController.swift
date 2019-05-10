@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import UserNotifications
 
 class AddTaskController : UIViewController{
     @IBOutlet weak var ProgressSlider: UISlider!
@@ -44,6 +45,7 @@ class AddTaskController : UIViewController{
         }
         
         let task = Task(context: appContext)
+        
         task.dueDate = DatePicker.date
         task.hasReminder = ReminderSwitch.isOn
         task.name = TaskNameText.text
@@ -52,6 +54,49 @@ class AddTaskController : UIViewController{
         task.startDate = Date.init()
         
         task.task_to_project = projectItem
+        
+        let center = UNUserNotificationCenter.current()
+        
+        center.requestAuthorization(options: [.alert, .badge, .sound], completionHandler: { (granted, error) in
+            if granted{
+                let dayContent = UNMutableNotificationContent()
+                let formatter = DateFormatter()
+                formatter.dateFormat = "dd/MM/yyyy"
+                
+                dayContent.title = "A task is getting near the deadline"
+                let projectName = self.projectItem?.name
+                dayContent.body = task.name! + " belonging to the project "
+                dayContent.body += projectName! + " is due on"
+                dayContent.body += formatter.string(from: task.dueDate!)
+                dayContent.categoryIdentifier = "alarm"
+                dayContent.sound = UNNotificationSound.default
+                
+                let dateComponents = Calendar.current.dateComponents(Set(arrayLiteral: Calendar.Component.year, Calendar.Component.month, Calendar.Component.day), from: task.dueDate!)
+                let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+                let dayId = UUID()
+                let dayRequest = UNNotificationRequest(identifier: dayId.uuidString, content: dayContent, trigger: trigger)
+                UNUserNotificationCenter.current().add(dayRequest, withCompletionHandler: { error in
+                    if let error = error {
+                        //handle error
+                        let alert = UIAlertController(title: "Error",message: "An error occurred setting up notifications for this task",preferredStyle: .alert)
+                        let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                        alert.addAction(OKAction)
+                        self.present(alert, animated: true, completion: nil)
+                        return
+                    } else {
+                        //notification set up successfully
+                        task.dayReminder = UUID(uuidString: dayId.uuidString)
+                    }
+                })
+                
+                
+                
+            }
+            else{
+                return
+            }
+            
+        })
         
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
         
