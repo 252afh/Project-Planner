@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import EventKit
 
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
 
@@ -19,7 +20,11 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         navigationItem.leftBarButtonItem = editButtonItem
-
+        if tableView.numberOfRows(inSection: 0) > 0{
+            let initialIndexPath = IndexPath(row: 0, section: 0)
+            self.tableView.selectRow(at: initialIndexPath, animated: true, scrollPosition:UITableView.ScrollPosition.none)
+            self.performSegue(withIdentifier: "showDetail", sender: initialIndexPath)
+        }
         
         if let split = splitViewController {
             let controllers = split.viewControllers
@@ -60,6 +65,23 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
         }
+        
+        if let addProjectController = segue.destination as? AddProjectController,
+            segue.identifier == "AddProject"{
+            addProjectController.delegate = self
+        }
+
+    }
+    
+    func selectTableIndex(){
+        let index = IndexPath(row: 0, section: 0)
+        self.tableView.selectRow(at: index, animated: true, scrollPosition: UITableView.ScrollPosition.none)
+        self.tableView(self.tableView, didSelectRowAt: index)
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let projectItem = fetchedResultsController.object(at: indexPath)
+        detailViewController?.projectController?.UpdateProjectItem(newProject: projectItem)
     }
 
     // MARK: - Table View
@@ -88,8 +110,39 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             let context = fetchedResultsController.managedObjectContext
-            context.delete(fetchedResultsController.object(at: indexPath))
-                
+            let projectItem = fetchedResultsController.object(at: indexPath) 
+            context.delete(projectItem)
+            let eventStore = EKEventStore()
+            let calendars = eventStore.calendars(for: .event)
+            
+            for calendar in calendars{
+                if calendar.title == "Project_Planner"{
+                    let pastPredicate = eventStore.predicateForEvents(withStart: projectItem.dueDate!, end: projectItem.dueDate!, calendars: [calendar])
+                    
+                    let events = eventStore.events(matching: pastPredicate)
+                    for foundReminders in events{
+                        if foundReminders.calendarItemIdentifier == projectItem.calenderId?.uuidString{
+                            let remindersToDelete = true
+                            let span = EKSpan(rawValue: 0)
+                            do {
+                                try eventStore.remove(foundReminders, span: span!, commit: false)
+                            }
+                            catch {
+                                
+                            }
+                            if remindersToDelete {
+                                do {
+                                    try eventStore.commit()
+                                }
+                                catch {
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
             do {
                 try context.save()
             } catch {
@@ -119,7 +172,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         fetchRequest.fetchBatchSize = 20
         
         // Edit the sort key as appropriate.
-        let sortDescriptor = NSSortDescriptor(key: "name", ascending: false)
+        let sortDescriptor = NSSortDescriptor(key: "createdDate", ascending: false)
         
         fetchRequest.sortDescriptors = [sortDescriptor]
         
@@ -143,7 +196,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     var _fetchedResultsController: NSFetchedResultsController<Project>? = nil
 
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        tableView.beginUpdates()
+        if tableView.numberOfRows(inSection: 0) > 0{
+            tableView.beginUpdates()
+        }
     }
 
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange sectionInfo: NSFetchedResultsSectionInfo, atSectionIndex sectionIndex: Int, for type: NSFetchedResultsChangeType) {
@@ -161,6 +216,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         switch type {
             case .insert:
                 tableView.insertRows(at: [newIndexPath!], with: .fade)
+                tableView.selectRow(at: newIndexPath, animated: true, scrollPosition: UITableView.ScrollPosition(rawValue: 0)!)
             case .delete:
                 tableView.deleteRows(at: [indexPath!], with: .fade)
             case .update:
@@ -172,7 +228,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     }
 
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        tableView.endUpdates()
+        if tableView.numberOfRows(inSection: 0) > 0{
+            tableView.endUpdates()
+        }
     }
 
     /*

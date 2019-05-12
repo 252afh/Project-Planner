@@ -22,6 +22,10 @@ class CircularProgressBar: UIView {
     
     //MARK: Public
     
+    public var isDays:Bool = false
+    
+    public var days:Int = 0
+    
     public var lineWidth:CGFloat = 10 {
         didSet{
             foregroundLayer.lineWidth = lineWidth
@@ -68,6 +72,10 @@ class CircularProgressBar: UIView {
         let timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { (timer) in
             if currentTime >= 2{
                 timer.invalidate()
+                if self.isDays{
+                    self.label.adjustsFontSizeToFitWidth = true
+                    self.label.text = String(self.days) + " days"
+                }
             } else {
                 currentTime += 0.05
                 let percent = currentTime/2 * 100
@@ -143,17 +151,21 @@ class CircularProgressBar: UIView {
     }
     
     private func setForegroundLayerColorForSafePercent(){
-        if Int(label.text!.dropLast())! == 0 || label.text == nil{
-            self.foregroundLayer.strokeColor = UIColor.lightGray.cgColor
-            return
+        if label.text!.isEmpty == false && isDays == false{
+            print(label.text)
+            print(label.text?.dropLast())
+            if Int(label.text!.dropLast())! == 0{
+                self.foregroundLayer.strokeColor = UIColor.lightGray.cgColor
+                return
+            }
+            
+            if Int(label.text!.dropLast())! >= self.safePercent {
+                self.foregroundLayer.strokeColor = UIColor.green.cgColor
+                return
+            }
+            
+            self.foregroundLayer.strokeColor = UIColor.red.cgColor
         }
-        
-        if Int(label.text!.dropLast())! >= self.safePercent {
-            self.foregroundLayer.strokeColor = UIColor.green.cgColor
-            return
-        }
-        
-        self.foregroundLayer.strokeColor = UIColor.red.cgColor
     }
     
     private func setupView() {

@@ -32,6 +32,7 @@ class EditProjectController : UIViewController {
             prioritySelector.selectedSegmentIndex = Int((projectItem?.priority.description)!)!
             dueDate.date = projectItem!.dueDate!
             noteText.text = projectItem?.notes
+            reminderSwitch.isOn = projectItem!.calendarEntry
         }
     }
     @IBAction func CancelButton_OnClick(_ sender: UIButton) {
@@ -47,7 +48,7 @@ class EditProjectController : UIViewController {
             return
         }
         
-        if dueDate.date <= Date.init(){
+        if dueDate.date < Date.init(){
             let alert = UIAlertController(title: "Incorrect due date",message: "The due date has to be in the future",preferredStyle: .alert)
             let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(OKAction)
@@ -61,71 +62,15 @@ class EditProjectController : UIViewController {
         
         if projectItem?.calendarEntry == false && reminderSwitch.isOn == true{
             // add new entry
-            let eventStore = EKEventStore()
-            
-            switch EKEventStore.authorizationStatus(for: .event) {
-            case .authorized:
-                insertEvent(store: eventStore, project: projectItem!)
-            case .denied:
-                let alert = UIAlertController(title: "Error",message: "Permission denied to add calendar entry",preferredStyle: .alert)
-                let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-                alert.addAction(OKAction)
-                self.present(alert, animated: true, completion: nil)
-                return
-            case .notDetermined:
-                eventStore.requestAccess(to: .event, completion:
-                    {[weak self] (granted: Bool, error: Error?) -> Void in
-                        if granted {
-                            self!.insertEvent(store: eventStore, project: self!.projectItem!)
-                        } else {
-                            let alert = UIAlertController(title: "Error",message: "Permission denied to add calendar entry",preferredStyle: .alert)
-                            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-                            alert.addAction(OKAction)
-                            self?.present(alert, animated: true, completion: nil)
-                            return
-                        }
-                })
-            default:
-                let alert = UIAlertController(title: "Error",message: "An error occurred adding a calendar entry",preferredStyle: .alert)
-                let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-                alert.addAction(OKAction)
-                self.present(alert, animated: true, completion: nil)
-                return
-            }
+            AddReminder()
         }
         else if projectItem?.calendarEntry == true && reminderSwitch.isOn == false{
             // delete entry
-            
-            let eventStore = EKEventStore()
-            let calendars = eventStore.calendars(for: .event)
-            
-            for calendar in calendars{
-                if calendar.title == "Project_Planner"{
-                    let pastPredicate = eventStore.predicateForEvents(withStart: projectItem!.dueDate!, end: projectItem!.dueDate!, calendars: [calendar])
-                    
-                    let events = eventStore.events(matching: pastPredicate)
-                    for foundReminders in events{
-                        if foundReminders.calendarItemIdentifier == projectItem?.calenderId?.uuidString{
-                            let remindersToDelete = true
-                            let span = EKSpan(rawValue: 0)
-                            do {
-                                try eventStore.remove(foundReminders, span: span!, commit: false)
-                            }
-                            catch {
-                                
-                            }
-                            if remindersToDelete {
-                                do {
-                                    try eventStore.commit()
-                                }
-                                catch {
-                                    
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            DeleteReminder()
+        }
+        else if projectItem?.calendarEntry == true && reminderSwitch.isOn == true {
+            DeleteReminder()
+            AddReminder()
         }
         
         projectItem?.calendarEntry = reminderSwitch.isOn
@@ -137,16 +82,78 @@ class EditProjectController : UIViewController {
             , completion: nil)
     }
     
+    func AddReminder(){
+        let eventStore = EKEventStore()
+        
+        switch EKEventStore.authorizationStatus(for: .event) {
+        case .authorized:
+            insertEvent(store: eventStore, project: projectItem!)
+        case .denied:
+            let alert = UIAlertController(title: "Error",message: "Permission denied to add calendar entry",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        case .notDetermined:
+            eventStore.requestAccess(to: .event, completion:
+                {[weak self] (granted: Bool, error: Error?) -> Void in
+                    if granted {
+                        self!.insertEvent(store: eventStore, project: self!.projectItem!)
+                    } else {
+                        let alert = UIAlertController(title: "Error",message: "Permission denied to add calendar entry",preferredStyle: .alert)
+                        let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                        alert.addAction(OKAction)
+                        self?.present(alert, animated: true, completion: nil)
+                        return
+                    }
+            })
+        default:
+            let alert = UIAlertController(title: "Error",message: "An error occurred adding a calendar entry",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+    }
+    
+    func DeleteReminder(){
+        let eventStore = EKEventStore()
+        let calendars = eventStore.calendars(for: .event)
+        
+        for calendar in calendars{
+            if calendar.title == "Project_Planner"{
+                let pastPredicate = eventStore.predicateForEvents(withStart: projectItem!.dueDate!, end: projectItem!.dueDate!, calendars: [calendar])
+                
+                let events = eventStore.events(matching: pastPredicate)
+                for foundReminders in events{
+                    if foundReminders.calendarItemIdentifier == projectItem?.calenderId?.uuidString{
+                        let remindersToDelete = true
+                        let span = EKSpan(rawValue: 0)
+                        do {
+                            try eventStore.remove(foundReminders, span: span!, commit: false)
+                        }
+                        catch {
+                            
+                        }
+                        if remindersToDelete {
+                            do {
+                                try eventStore.commit()
+                            }
+                            catch {
+                                
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     func insertEvent(store: EKEventStore, project: Project){
         let calendars = store.calendars(for: .event)
         
         for calendar in calendars {
-            // 2
             if calendar.title == "Project_Planner" {
-                // 3
-                //let endDate = Calendar.current.date(byAdding: .day, value: 1, to: startDate!)
-                
-                // 4
                 let event = EKEvent(eventStore: store)
                 event.calendar = calendar
                 
@@ -156,7 +163,6 @@ class EditProjectController : UIViewController {
                 event.isAllDay = true
                 event.notes = project.notes
                 
-                // 5
                 do {
                     try store.save(event, span: .thisEvent)
                 }

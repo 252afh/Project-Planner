@@ -8,6 +8,7 @@
 
 import Foundation
 import UIKit
+import UserNotifications
 
 class EditTaskController : UIViewController{
     
@@ -28,6 +29,7 @@ class EditTaskController : UIViewController{
             progressSlider.value = Float((taskItem?.progress.description)!) as! Float
             reminderSwitch.isOn = taskItem!.hasReminder
             progressLabel.text = String(taskItem?.progress.description ?? "0") + "%"
+            dueDatePicker.date = taskItem!.dueDate!
         }
     }
     @IBAction func SaveButton_OnClick(_ sender: UIButton) {
@@ -47,11 +49,28 @@ class EditTaskController : UIViewController{
             return
         }
         
-        taskItem?.notes = notesTextField.text
+        taskItem?.dueDate = dueDatePicker.date
         taskItem?.name = taskNameText.text
+        
+        if taskItem?.hasReminder == true && self.reminderSwitch.isOn == false{
+            // remove reminder
+            RemoveNotification()
+        }
+        else if taskItem?.hasReminder == false && self.reminderSwitch.isOn == true{
+            // add notification
+            AddNotification()
+            
+        }
+        else if taskItem?.hasReminder == true && reminderSwitch.isOn == true{
+            // Remove existing notification and add updated one
+            RemoveNotification()
+            AddNotification()
+        }
+        
+        taskItem?.notes = notesTextField.text
         taskItem?.progress = Int16(progressSlider.value)
         taskItem?.hasReminder = reminderSwitch.isOn
-        taskItem?.dueDate = dueDatePicker.date
+        
         
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
         
@@ -65,5 +84,55 @@ class EditTaskController : UIViewController{
     @IBAction func ProgressSlider_OnChange(_ sender: UISlider) {
         let progress = sender.value
         progressLabel.text = String(Int16(progress)) + "% progress"
+    }
+    
+    func RemoveNotification(){
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [(taskItem?.dayReminder!.uuidString)!])
+    }
+    
+    func AddNotification(){
+        let center = UNUserNotificationCenter.current()
+        
+        center.requestAuthorization(options: [.alert, .badge, .sound], completionHandler: { (granted, error) in
+            if granted{
+                let dayContent = UNMutableNotificationContent()
+                let formatter = DateFormatter()
+                formatter.dateFormat = "dd/MM/yyyy"
+                
+                dayContent.title = "A task is getting near the deadline"
+                let projectName = (self.taskItem?.task_to_project)!.name
+                dayContent.body = self.taskItem!.name! + " belonging to the project "
+                dayContent.body += projectName! + " has passed the due date: "
+                dayContent.body += formatter.string(from: self.taskItem!.dueDate!)
+                dayContent.categoryIdentifier = "alarm"
+                dayContent.sound = UNNotificationSound.default
+                
+                let dateComponents = Calendar.current.dateComponents(Set(arrayLiteral: Calendar.Component.year, Calendar.Component.month, Calendar.Component.day), from: self.taskItem!.dueDate!)
+                let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+                let dayId = UUID()
+                let dayRequest = UNNotificationRequest(identifier: dayId.uuidString, content: dayContent, trigger: trigger)
+                center.add(dayRequest, withCompletionHandler: { error in
+                    if let error = error {
+                        //handle error
+                        let alert = UIAlertController(title: "Error",message: "An error occurred setting up notifications for this task",preferredStyle: .alert)
+                        let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+                        alert.addAction(OKAction)
+                        self.present(alert, animated: true, completion: nil)
+                        return
+                    } else {
+                        //notification set up successfully
+                        self.taskItem!.dayReminder = dayId
+                    }
+                })
+                
+                
+                
+            }
+            else{
+                return
+            }
+            
+        })
     }
 }

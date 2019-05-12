@@ -17,6 +17,7 @@ class AddTaskController : UIViewController{
     @IBOutlet weak var NoteText: UITextView!
     @IBOutlet weak var DatePicker: UIDatePicker!
     @IBOutlet weak var ReminderSwitch: UISwitch!
+    var delegate:DetailViewController?
     let appContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
@@ -66,7 +67,7 @@ class AddTaskController : UIViewController{
                 dayContent.title = "A task is getting near the deadline"
                 let projectName = self.projectItem?.name
                 dayContent.body = task.name! + " belonging to the project "
-                dayContent.body += projectName! + " is due on"
+                dayContent.body += projectName! + " has passed the due date: "
                 dayContent.body += formatter.string(from: task.dueDate!)
                 dayContent.categoryIdentifier = "alarm"
                 dayContent.sound = UNNotificationSound.default
@@ -75,7 +76,7 @@ class AddTaskController : UIViewController{
                 let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
                 let dayId = UUID()
                 let dayRequest = UNNotificationRequest(identifier: dayId.uuidString, content: dayContent, trigger: trigger)
-                UNUserNotificationCenter.current().add(dayRequest, withCompletionHandler: { error in
+                center.add(dayRequest, withCompletionHandler: { error in
                     if let error = error {
                         //handle error
                         let alert = UIAlertController(title: "Error",message: "An error occurred setting up notifications for this task",preferredStyle: .alert)
@@ -85,7 +86,7 @@ class AddTaskController : UIViewController{
                         return
                     } else {
                         //notification set up successfully
-                        task.dayReminder = UUID(uuidString: dayId.uuidString)
+                        task.dayReminder = dayId
                     }
                 })
                 
@@ -102,6 +103,9 @@ class AddTaskController : UIViewController{
         
         dismiss(animated: true
             , completion: nil)
+        self.delegate?.tasks?.append(task)
+        self.delegate?.ReloadTasks()
+        self.delegate?.RefreshProjectProgress()
     }
     
     @IBAction func CancelButton_OnClick(_ sender: UIButton) {

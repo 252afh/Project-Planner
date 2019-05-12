@@ -8,12 +8,13 @@
 
 import UIKit
 import CoreData
+import UserNotifications
 
 class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     @IBOutlet weak var tableView: UITableView!
     var itemList = [String]()
     var tasks :[Task]?
-    
+    var projectController:ProjectDetailController?
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -29,10 +30,12 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if let projectController = segue.destination as? ProjectDetailController,
             segue.identifier == "projectEmbedSegue"{
             projectController.projectItem = self.projectItem
+            self.projectController = projectController
         }
         
         if let taskController = segue.destination as? AddTaskController,
             segue.identifier == "taskPopOverSegue"{
+            taskController.delegate = self
             taskController.projectItem = self.projectItem
         }
         
@@ -41,6 +44,14 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                 let cell = sender as? CustomTableCell
                 editTaskController.taskItem = cell?.task
         }
+    }
+    
+    func ReloadTasks(){
+        tableView.reloadData()
+    }
+    
+    func RefreshProjectProgress(){
+        projectController?.RefreshProgressCircle()
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -64,8 +75,14 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         cell.task = task
         cell.dueDateLabel.text = formatter.string(from: task.dueDate!)
         cell.nameLabel.text = task.name
-        cell.progressLabel.text =  String(task.progress) + "%"
-        cell.progressSlider.value = Float(task.progress)
+        
+        let progressD = Double(task.progress)/100
+        
+        cell.progressCircle.safePercent = 70
+        cell.progressCircle.lineWidth = 10
+        cell.progressCircle.setProgress(to: progressD, withAnimation: true)
+        cell.progressCircle.labelSize = 20
+        
         return cell
     }
 
@@ -86,6 +103,8 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
             (UIApplication.shared.delegate as! AppDelegate).saveContext()
             
             tableView.deleteRows(at: [indexPath], with: UITableView.RowAnimation.automatic)
+            let center = UNUserNotificationCenter.current()
+            center.removePendingNotificationRequests(withIdentifiers: [(object?.dayReminder!.uuidString)!])
         }
     }
 

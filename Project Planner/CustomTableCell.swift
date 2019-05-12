@@ -12,8 +12,7 @@ import UIKit
 class CustomTableCell : UITableViewCell {
     
     @IBOutlet weak var nameLabel: UILabel!
-    @IBOutlet weak var progressSlider: UISlider!
-    @IBOutlet weak var progressLabel: UILabel!
+    @IBOutlet weak var progressCircle: CircularProgressBar!
     @IBOutlet weak var dueDateLabel: UILabel!
     var task: Task?
     

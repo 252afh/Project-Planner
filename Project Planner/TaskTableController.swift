@@ -40,8 +40,6 @@ class TaskTableController : UITableViewController{
         let task = tasks![indexPath.row]
         cell.dueDateLabel.text = formatter.string(from: task.dueDate!)
         cell.nameLabel.text = task.name
-        cell.progressLabel.text =  String(task.progress) + "%"
-        cell.progressSlider.value = Float(task.progress)
         return cell
     }
 }
