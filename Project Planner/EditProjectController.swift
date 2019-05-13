@@ -16,6 +16,7 @@ class EditProjectController : UIViewController {
     @IBOutlet weak var prioritySelector: UISegmentedControl!
     @IBOutlet weak var noteText: UITextView!
     @IBOutlet weak var dueDate: UIDatePicker!
+    var delegate: ProjectDetailController!
     
     @IBOutlet weak var reminderSwitch: UISwitch!
     var projectItem : Project?
@@ -61,22 +62,24 @@ class EditProjectController : UIViewController {
         projectItem?.priority = Int16(prioritySelector.selectedSegmentIndex)
         
         if projectItem?.calendarEntry == false && reminderSwitch.isOn == true{
-            // add new entry
+            projectItem?.dueDate = dueDate.date
             AddReminder()
         }
         else if projectItem?.calendarEntry == true && reminderSwitch.isOn == false{
-            // delete entry
             DeleteReminder()
+            projectItem?.dueDate = dueDate.date
         }
         else if projectItem?.calendarEntry == true && reminderSwitch.isOn == true {
             DeleteReminder()
+            projectItem?.dueDate = dueDate.date
             AddReminder()
         }
         
         projectItem?.calendarEntry = reminderSwitch.isOn
-        projectItem?.dueDate = dueDate.date
         
         (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        
+        delegate.UpdateProjectItem(newProject: projectItem!)
         
         dismiss(animated: true
             , completion: nil)

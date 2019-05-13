@@ -16,6 +16,7 @@ class EditTaskController : UIViewController{
     @IBOutlet weak var taskNameText: UITextField!
     @IBOutlet weak var progressSlider: UISlider!
     @IBOutlet weak var progressLabel: UILabel!
+    @IBOutlet weak var startDatePicker: UIDatePicker!
     @IBOutlet weak var reminderSwitch: UISwitch!
     @IBOutlet weak var dueDatePicker: UIDatePicker!
     let appContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
@@ -41,8 +42,40 @@ class EditTaskController : UIViewController{
             return
         }
         
-        if dueDatePicker.date <= Date.init(){
-            let alert = UIAlertController(title: "Incorrect due date",message: "The due date has to be in the future",preferredStyle: .alert)
+        if Calendar.current.startOfDay(for: dueDatePicker.date) < Calendar.current.startOfDay(for: Date.init()){
+            let alert = UIAlertController(title: "Incorrect date",message: "The due date cannot be before today",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        if Calendar.current.startOfDay(for: startDatePicker.date) < Calendar.current.startOfDay(for: Date.init()){
+            let alert = UIAlertController(title: "Incorrect date",message: "The start date cannot be before today",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        if dueDatePicker.date > Calendar.current.startOfDay(for: (taskItem?.task_to_project?.dueDate!)!) {
+            let alert = UIAlertController(title: "Incorrect date",message: "The due date cannot be after the project due date",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+    
+        if startDatePicker.date > Calendar.current.startOfDay(for: (taskItem?.task_to_project?.dueDate!)!){
+            let alert = UIAlertController(title: "Incorrect date",message: "The start date cannot be after the project due date",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        if Calendar.current.startOfDay(for: startDatePicker.date) > Calendar.current.startOfDay(for: dueDatePicker.date){
+            let alert = UIAlertController(title: "Incorrect date",message: "The start date cannot be after the due date",preferredStyle: .alert)
             let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(OKAction)
             self.present(alert, animated: true, completion: nil)
@@ -70,6 +103,7 @@ class EditTaskController : UIViewController{
         taskItem?.notes = notesTextField.text
         taskItem?.progress = Int16(progressSlider.value)
         taskItem?.hasReminder = reminderSwitch.isOn
+        taskItem?.startDate = startDatePicker.date
         
         
         (UIApplication.shared.delegate as! AppDelegate).saveContext()

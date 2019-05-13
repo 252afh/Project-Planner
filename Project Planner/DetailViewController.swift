@@ -26,6 +26,16 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         }
     }
     
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        if identifier == "taskPopOverSegue"{
+            if projectItem == nil{
+                return false
+            }
+        }
+        
+        return true
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let projectController = segue.destination as? ProjectDetailController,
             segue.identifier == "projectEmbedSegue"{
@@ -75,7 +85,10 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         cell.task = task
         cell.dueDateLabel.text = formatter.string(from: task.dueDate!)
         cell.nameLabel.text = task.name
-        
+        cell.noteText.text = task.notes
+        cell.noteText.layer.borderColor = UIColor.lightGray.cgColor
+        cell.noteText.layer.borderWidth = 1
+        cell.startDateLabel.text = formatter.string(from: task.startDate!)
         let progressD = Double(task.progress)/100
         
         cell.progressCircle.safePercent = 70

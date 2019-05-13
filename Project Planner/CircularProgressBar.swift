@@ -152,8 +152,6 @@ class CircularProgressBar: UIView {
     
     private func setForegroundLayerColorForSafePercent(){
         if label.text!.isEmpty == false && isDays == false{
-            print(label.text)
-            print(label.text?.dropLast())
             if Int(label.text!.dropLast())! == 0{
                 self.foregroundLayer.strokeColor = UIColor.lightGray.cgColor
                 return

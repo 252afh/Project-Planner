@@ -14,6 +14,8 @@ class CustomTableCell : UITableViewCell {
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var progressCircle: CircularProgressBar!
     @IBOutlet weak var dueDateLabel: UILabel!
+    @IBOutlet weak var noteText: UITextView!
+    @IBOutlet weak var startDateLabel: UILabel!
     var task: Task?
     
     override func awakeFromNib() {

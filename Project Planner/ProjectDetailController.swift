@@ -62,13 +62,13 @@ class ProjectDetailController :UIViewController {
             progressCircle.setProgress(to: progressD, withAnimation: true)
             progressCircle.labelSize = 20
             
-            let totalDays = Calendar.current.dateComponents([.day], from: project.createdDate!, to: project.dueDate!)
+            let totalDays = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: project.createdDate!), to: Calendar.current.startOfDay(for: project.dueDate!))
             
-            let daysPassed = Calendar.current.dateComponents([.day], from: project.createdDate!, to: Date.init())
+            let daysPassed = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: project.createdDate!), to: Calendar.current.startOfDay(for: Date.init()))
             
             let totalDaysInt = totalDays.day!
             let daysPassedInt = daysPassed.day!
-            let days = totalDaysInt - daysPassedInt
+            let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: Date.init()), to: Calendar.current.startOfDay(for: project.dueDate!)).day
             var percentage = 0
             
             if (totalDaysInt != 0){
@@ -80,16 +80,27 @@ class ProjectDetailController :UIViewController {
             daysLeftCircle.safePercent = 70
             daysLeftCircle.lineWidth = 10
             daysLeftCircle.setProgress(to: daysLeft, withAnimation: true)
-            daysLeftCircle.labelSize = 20
+            daysLeftCircle.labelSize = 40
             daysLeftCircle.isDays = true
-            daysLeftCircle.days = days
+            daysLeftCircle.days = days!
         }
+    }
+    
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        if identifier == "editProjectPopover"{
+            if projectItem == nil{
+                return false
+            }
+        }
+        
+        return true
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let editProjectController = segue.destination as? EditProjectController,
             segue.identifier == "editProjectPopover"{
             editProjectController.projectItem = self.projectItem
+            editProjectController.delegate = self
         }
     }
     

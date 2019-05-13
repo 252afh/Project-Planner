@@ -14,6 +14,7 @@ class AddTaskController : UIViewController{
     @IBOutlet weak var ProgressSlider: UISlider!
     @IBOutlet weak var TaskNameText: UITextField!
     @IBOutlet weak var progressLabel: UILabel!
+    @IBOutlet weak var startdatePicker: UIDatePicker!
     @IBOutlet weak var NoteText: UITextView!
     @IBOutlet weak var DatePicker: UIDatePicker!
     @IBOutlet weak var ReminderSwitch: UISwitch!
@@ -29,8 +30,32 @@ class AddTaskController : UIViewController{
     
     @IBAction func SaveButton_OnClick(_ sender: UIButton) {
         
-        if DatePicker.date < Date.init(){
-            let alert = UIAlertController(title: "Invalid date",message: "Date cannot be earlier than today",preferredStyle: .alert)
+        if Calendar.current.startOfDay(for: DatePicker.date) < Calendar.current.startOfDay(for: Date.init()){
+            let alert = UIAlertController(title: "Invalid date",message: "Due date cannot be earlier than today",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        if Calendar.current.startOfDay(for: startdatePicker.date) < Calendar.current.startOfDay(for: Date.init()){
+            let alert = UIAlertController(title: "Invalid date",message: "Start date cannot be earlier than today",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        if startdatePicker.date > Calendar.current.startOfDay(for: projectItem!.dueDate!){
+            let alert = UIAlertController(title: "Invalid date",message: "Start date cannot be after the project due date",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        if DatePicker.date > Calendar.current.startOfDay(for: projectItem!.dueDate!){
+            let alert = UIAlertController(title: "Invalid date",message: "Due date cannot be after the project due date",preferredStyle: .alert)
             let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(OKAction)
             self.present(alert, animated: true, completion: nil)
@@ -52,7 +77,7 @@ class AddTaskController : UIViewController{
         task.name = TaskNameText.text
         task.notes = NoteText.text
         task.progress = Int16(ProgressSlider.value)
-        task.startDate = Date.init()
+        task.startDate = startdatePicker.date
         
         task.task_to_project = projectItem
         
@@ -87,6 +112,14 @@ class AddTaskController : UIViewController{
                     } else {
                         //notification set up successfully
                         task.dayReminder = dayId
+                        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+                        
+                        self.dismiss(animated: true
+                            , completion: nil)
+                        self.delegate?.tasks?.append(task)
+                        print(task.dayReminder?.uuidString)
+                        self.delegate?.ReloadTasks()
+                        self.delegate?.RefreshProjectProgress()
                     }
                 })
                 
@@ -99,13 +132,7 @@ class AddTaskController : UIViewController{
             
         })
         
-        (UIApplication.shared.delegate as! AppDelegate).saveContext()
         
-        dismiss(animated: true
-            , completion: nil)
-        self.delegate?.tasks?.append(task)
-        self.delegate?.ReloadTasks()
-        self.delegate?.RefreshProjectProgress()
     }
     
     @IBAction func CancelButton_OnClick(_ sender: UIButton) {
