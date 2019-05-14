@@ -31,6 +31,8 @@ class EditTaskController : UIViewController{
             reminderSwitch.isOn = taskItem!.hasReminder
             progressLabel.text = String(taskItem?.progress.description ?? "0") + "%"
             dueDatePicker.date = taskItem!.dueDate!
+            self.view.layer.borderColor = UIColor.white.cgColor
+            self.view.layer.borderWidth = 3
         }
     }
     @IBAction func SaveButton_OnClick(_ sender: UIButton) {

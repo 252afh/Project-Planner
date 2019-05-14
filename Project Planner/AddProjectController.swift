@@ -29,12 +29,15 @@ class AddProjectController: UIViewController {
         // Do any additional setup after loading the view.
         self.NotesTextField.layer.borderColor = UIColor.lightGray.cgColor
         self.NotesTextField.layer.borderWidth = 1
+        self.DatePicker.backgroundColor = UIColor.gray
         ProjectName.becomeFirstResponder()
-        
-        newProject = Project(context: appContext)
+        self.view.layer.borderColor = UIColor.white.cgColor
+        self.view.layer.borderWidth = 3
     }
     
     @IBAction func SaveButton_OnClick(_ sender: UIButton) {
+        newProject = Project(context: appContext)
+        
         if (ProjectName.text == "" || ProjectName.text == nil ){
             //Alert
             let alert = UIAlertController(title: "Missing project name",message: "Enter a name for the project",preferredStyle: .alert)

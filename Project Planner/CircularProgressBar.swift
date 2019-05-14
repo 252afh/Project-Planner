@@ -17,6 +17,7 @@ class CircularProgressBar: UIView {
         super.awakeFromNib()
         setupView()
         label.text = "0%"
+        label.textColor = UIColor.white
     }
     
     

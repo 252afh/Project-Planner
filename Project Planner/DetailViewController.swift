@@ -57,7 +57,9 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     func ReloadTasks(){
-        tableView.reloadData()
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
     
     func RefreshProjectProgress(){
@@ -67,6 +69,10 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cell = tableView.cellForRow(at: indexPath) as? CustomTableCell
         self.performSegue(withIdentifier: "editTaskPopup", sender: cell)
+        
+        let color = UIView()
+        color.backgroundColor = UIColor.darkGray
+        cell?.selectedBackgroundView = color
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {

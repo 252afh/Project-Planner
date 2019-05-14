@@ -23,7 +23,13 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         if tableView.numberOfRows(inSection: 0) > 0{
             let initialIndexPath = IndexPath(row: 0, section: 0)
             self.tableView.selectRow(at: initialIndexPath, animated: true, scrollPosition:UITableView.ScrollPosition.none)
+            self.tableView(self.tableView, didSelectRowAt: initialIndexPath)
             self.performSegue(withIdentifier: "showDetail", sender: initialIndexPath)
+            
+            let cell = tableView.cellForRow(at: initialIndexPath)
+            let color = UIView()
+            color.backgroundColor = UIColor.darkGray
+            cell?.selectedBackgroundView = color
         }
         
         if let split = splitViewController {
@@ -82,6 +88,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let projectItem = fetchedResultsController.object(at: indexPath)
         detailViewController?.projectController?.UpdateProjectItem(newProject: projectItem)
+        print(projectItem.name)
+        
+        let cell = tableView.cellForRow(at: indexPath)
+        let color = UIView()
+        color.backgroundColor = UIColor.darkGray
+        cell?.selectedBackgroundView = color
     }
 
     // MARK: - Table View

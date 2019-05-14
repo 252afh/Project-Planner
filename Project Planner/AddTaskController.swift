@@ -26,6 +26,10 @@ class AddTaskController : UIViewController{
         
         self.NoteText.layer.borderColor = UIColor.lightGray.cgColor
         self.NoteText.layer.borderWidth = 1
+        self.view.layer.borderColor = UIColor.white.cgColor
+        self.view.layer.borderWidth = 3
+        self.startdatePicker.backgroundColor = UIColor.gray
+        self.DatePicker.backgroundColor = UIColor.gray
     }
     
     @IBAction func SaveButton_OnClick(_ sender: UIButton) {
@@ -112,14 +116,7 @@ class AddTaskController : UIViewController{
                     } else {
                         //notification set up successfully
                         task.dayReminder = dayId
-                        (UIApplication.shared.delegate as! AppDelegate).saveContext()
-                        
-                        self.dismiss(animated: true
-                            , completion: nil)
-                        self.delegate?.tasks?.append(task)
-                        print(task.dayReminder?.uuidString)
-                        self.delegate?.ReloadTasks()
-                        self.delegate?.RefreshProjectProgress()
+                        self.SaveTask(task: task)
                     }
                 })
                 
@@ -133,6 +130,19 @@ class AddTaskController : UIViewController{
         })
         
         
+    }
+    
+    func SaveTask(task:Task!){
+        DispatchQueue.main.async {
+            (UIApplication.shared.delegate as! AppDelegate).saveContext()
+            
+            self.dismiss(animated: true
+                , completion: nil)
+            self.delegate?.tasks?.append(task)
+            print(task.dayReminder?.uuidString)
+            self.delegate?.ReloadTasks()
+            self.delegate?.RefreshProjectProgress()
+        }
     }
     
     @IBAction func CancelButton_OnClick(_ sender: UIButton) {

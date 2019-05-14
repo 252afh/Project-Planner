@@ -34,6 +34,9 @@ class EditProjectController : UIViewController {
             dueDate.date = projectItem!.dueDate!
             noteText.text = projectItem?.notes
             reminderSwitch.isOn = projectItem!.calendarEntry
+            dueDate.backgroundColor = UIColor.gray
+            self.view.layer.borderColor = UIColor.white.cgColor
+            self.view.layer.borderWidth = 3
         }
     }
     @IBAction func CancelButton_OnClick(_ sender: UIButton) {

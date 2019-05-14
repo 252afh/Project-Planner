@@ -23,9 +23,7 @@ class ProjectDetailController :UIViewController {
         if (super.viewIfLoaded != nil && projectItem != nil) {
             self.notesTextBox.layer.borderColor = UIColor.lightGray.cgColor
             self.notesTextBox.layer.borderWidth = 1
-            if let project = projectItem{
-                PopulateFields()
-            }
+            PopulateFields()
         }
         else{
             return;
