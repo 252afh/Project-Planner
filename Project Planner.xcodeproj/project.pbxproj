@@ -19,7 +19,6 @@
 		7D0C0632228304AA0061D380 /* CircularProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D0C0631228304AA0061D380 /* CircularProgressBar.swift */; };
 		7D28ACBC227CECA00010D1C4 /* EditProjectController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D28ACBB227CECA00010D1C4 /* EditProjectController.swift */; };
 		7D638AB1227623BB0058E5F8 /* AddTaskController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D638AB0227623BB0058E5F8 /* AddTaskController.swift */; };
-		7DBAA23E22776E4F007950F7 /* TaskTableController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DBAA23D22776E4F007950F7 /* TaskTableController.swift */; };
 		7DBAA2402277D21B007950F7 /* EditTaskController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DBAA23F2277D21B007950F7 /* EditTaskController.swift */; };
 		7DCA12352277120B005D58ED /* CustomTableCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DCA12342277120B005D58ED /* CustomTableCell.swift */; };
 /* End PBXBuildFile section */
@@ -39,7 +38,6 @@
 		7D0C0631228304AA0061D380 /* CircularProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularProgressBar.swift; sourceTree = "<group>"; };
 		7D28ACBB227CECA00010D1C4 /* EditProjectController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProjectController.swift; sourceTree = "<group>"; };
 		7D638AB0227623BB0058E5F8 /* AddTaskController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTaskController.swift; sourceTree = "<group>"; };
-		7DBAA23D22776E4F007950F7 /* TaskTableController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskTableController.swift; sourceTree = "<group>"; };
 		7DBAA23F2277D21B007950F7 /* EditTaskController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTaskController.swift; sourceTree = "<group>"; };
 		7DCA12342277120B005D58ED /* CustomTableCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTableCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -86,7 +84,6 @@
 				7D06C0D72275D76400DDD552 /* ProjectDetailController.swift */,
 				7D638AB0227623BB0058E5F8 /* AddTaskController.swift */,
 				7DCA12342277120B005D58ED /* CustomTableCell.swift */,
-				7DBAA23D22776E4F007950F7 /* TaskTableController.swift */,
 				7DBAA23F2277D21B007950F7 /* EditTaskController.swift */,
 				7D28ACBB227CECA00010D1C4 /* EditProjectController.swift */,
 				7D0C0631228304AA0061D380 /* CircularProgressBar.swift */,
@@ -172,7 +169,6 @@
 				7DCA12352277120B005D58ED /* CustomTableCell.swift in Sources */,
 				7DBAA2402277D21B007950F7 /* EditTaskController.swift in Sources */,
 				7D06DE48227480250064667D /* MasterViewController.swift in Sources */,
-				7DBAA23E22776E4F007950F7 /* TaskTableController.swift in Sources */,
 				7D06DE5B22748CDC0064667D /* ProjectPlanner.xcdatamodeld in Sources */,
 				7D06DE4A227480250064667D /* DetailViewController.swift in Sources */,
 				7D638AB1227623BB0058E5F8 /* AddTaskController.swift in Sources */,

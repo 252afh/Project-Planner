@@ -10,14 +10,31 @@ import Foundation
 import UIKit
 
 class ProjectDetailController :UIViewController {
+    // Project created date label
     @IBOutlet weak var createdOnLabel: UILabel!
+    
+    //Project due date label
     @IBOutlet weak var dueOnLabel: UILabel!
+    
+    // Project priority label
     @IBOutlet weak var priorityLabel: UILabel!
+    
+    // Project progress visual
     @IBOutlet weak var progressCircle: CircularProgressBar!
+    
+    // Project days left visual
     @IBOutlet weak var daysLeftCircle: CircularProgressBar!
+    
+    // Project notes
     @IBOutlet weak var notesTextBox: UITextView!
+    
+    // Project title label
     @IBOutlet weak var projectTitleLabel: UILabel!
     
+    // The project to display in this page
+    var projectItem: Project?
+    
+    // Sets up the fields and populates them on load
     override func viewDidLoad() {
         super.viewDidLoad()
         if (super.viewIfLoaded != nil && projectItem != nil) {
@@ -25,65 +42,32 @@ class ProjectDetailController :UIViewController {
             self.notesTextBox.layer.borderWidth = 1
             PopulateFields()
         }
-        else{
-            return;
-        }
     }
     
+    // Populates the views fields using the project
     func PopulateFields(){
         if let project = projectItem{
             let formatter = DateFormatter()
             formatter.dateFormat = "dd/MM/yyyy"
             projectTitleLabel.text = project.name
-            createdOnLabel.text = formatter.string(from: (project.createdDate)!)
-            dueOnLabel.text = formatter.string(from: (project.dueDate)!)
+            
+            if let createdDate = project.createdDate{
+                createdOnLabel.text = formatter.string(from: createdDate)
+            }
+            
+            if let dueDate = project.dueDate{
+                dueOnLabel.text = formatter.string(from: dueDate)
+            }
+            
             priorityLabel.text = (project.priority == 0 ? "low" : (project.priority == 1 ? "medium" : "high"))
             
             notesTextBox.text = project.notes
             
-            let tasks = project.project_to_task?.allObjects as! [Task]
-            var progress = 0
-            
-            if (tasks.count > 0){
-                for task in tasks{
-                    progress += Int(task.progress)
-                }
-                if (progress > 0){
-                    progress = progress/tasks.count
-                }
-            }
-            
-            let progressD = Double(progress)/100
-            
-            progressCircle.safePercent = 70
-            progressCircle.lineWidth = 10
-            progressCircle.setProgress(to: progressD, withAnimation: true)
-            progressCircle.labelSize = 20
-            
-            let totalDays = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: project.createdDate!), to: Calendar.current.startOfDay(for: project.dueDate!))
-            
-            let daysPassed = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: project.createdDate!), to: Calendar.current.startOfDay(for: Date.init()))
-            
-            let totalDaysInt = totalDays.day!
-            let daysPassedInt = daysPassed.day!
-            let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: Date.init()), to: Calendar.current.startOfDay(for: project.dueDate!)).day
-            var percentage = 0
-            
-            if (totalDaysInt != 0){
-                percentage = (daysPassedInt/totalDaysInt) * 100
-            }
-            
-            let daysLeft = Double(percentage)
-            
-            daysLeftCircle.safePercent = 70
-            daysLeftCircle.lineWidth = 10
-            daysLeftCircle.setProgress(to: daysLeft, withAnimation: true)
-            daysLeftCircle.labelSize = 40
-            daysLeftCircle.isDays = true
-            daysLeftCircle.days = days!
+            RefreshProgressCircles()
         }
     }
     
+    // Decides whether the edit popup should show if no project is loaded
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         if identifier == "editProjectPopover"{
             if projectItem == nil{
@@ -94,6 +78,7 @@ class ProjectDetailController :UIViewController {
         return true
     }
     
+    // Prepares for segue
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let editProjectController = segue.destination as? EditProjectController,
             segue.identifier == "editProjectPopover"{
@@ -102,31 +87,78 @@ class ProjectDetailController :UIViewController {
         }
     }
     
-    func UpdateProjectItem(newProject:Project){
-        projectItem = newProject
-        PopulateFields()
+    // Updates the local project item and repopulates the form
+    func UpdateProjectItem(newProject:Project?){
+        if newProject == nil{
+            self.projectTitleLabel.text = "Select a project"
+            self.createdOnLabel.text = nil
+            self.daysLeftCircle.setProgress(to: 0.00, withAnimation: false)
+            self.notesTextBox.text = nil
+            self.dueOnLabel.text = nil
+            self.priorityLabel.text = nil
+            self.progressCircle.setProgress(to: 0.00, withAnimation: false)
+            projectItem = nil
+        }
+        else{
+            projectItem = newProject
+            PopulateFields()
+        }
     }
     
-    func RefreshProgressCircle(){
-        let tasks = projectItem?.project_to_task?.allObjects as! [Task]
-        var progress = 0
-        
-        if (tasks.count > 0){
-            for task in tasks{
-                progress += Int(task.progress)
+    // Tells the progress circles to reload, used when a task is edited to only reload the relating information or when loading a project
+    func RefreshProgressCircles(){
+        if let project = projectItem{
+            let tasks = project.project_to_task?.allObjects as? [Task]
+            
+            var progress = 0
+            if let tasks = tasks{
+                if (tasks.count > 0){
+                    for task in tasks{
+                        progress += Int(task.progress)
+                    }
+                    if (progress > 0){
+                        progress = progress/tasks.count
+                    }
+                }
             }
-            if (progress > 0){
-                progress = progress/tasks.count
+            
+            let progressD = Double(progress)/100
+            
+            progressCircle.safePercent = 70
+            progressCircle.lineWidth = 10
+            progressCircle.setProgress(to: progressD, withAnimation: true)
+            progressCircle.labelSize = 20
+            
+            var totalDaysInt = 0
+            var daysPassedInt = 0
+            
+            if let createdDate = project.createdDate, let dueDate = project.dueDate{
+                let totalDays = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: createdDate), to: Calendar.current.startOfDay(for: dueDate))
+                
+                let daysPassed = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: createdDate), to: Calendar.current.startOfDay(for: Date.init()))
+                
+                totalDaysInt = totalDays.day!
+                daysPassedInt = daysPassed.day!
+                
+                
+                let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: Date.init()), to: Calendar.current.startOfDay(for: dueDate))
+                
+                if let days = days.day{
+                    
+                    var percentage = 0.00
+                    
+                    if (totalDaysInt != 0){
+                        percentage = Double((Double(daysPassedInt)/Double(totalDaysInt)))
+                    }
+                    
+                    daysLeftCircle.safePercent = 7
+                    daysLeftCircle.lineWidth = 10
+                    daysLeftCircle.setProgress(to: percentage, withAnimation: true)
+                    daysLeftCircle.labelSize = 40
+                    daysLeftCircle.isDays = true
+                    daysLeftCircle.days = days
+                }
             }
         }
-        
-        let progressD = Double(progress)/100
-        
-        progressCircle.safePercent = 70
-        progressCircle.lineWidth = 10
-        progressCircle.setProgress(to: progressD, withAnimation: true)
-        progressCircle.labelSize = 20
     }
-    
-    var projectItem: Project?
 }

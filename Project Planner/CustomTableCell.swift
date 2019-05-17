@@ -10,12 +10,22 @@ import Foundation
 import UIKit
 
 class CustomTableCell : UITableViewCell {
-    
+    // Task name
     @IBOutlet weak var nameLabel: UILabel!
+    
+    // Task progress
     @IBOutlet weak var progressCircle: CircularProgressBar!
+    
+    // Task due date
     @IBOutlet weak var dueDateLabel: UILabel!
+    
+    // Task notes
     @IBOutlet weak var noteText: UITextView!
+    
+    // Task start date
     @IBOutlet weak var startDateLabel: UILabel!
+    
+    // The cell task
     var task: Task?
     
     override func awakeFromNib() {

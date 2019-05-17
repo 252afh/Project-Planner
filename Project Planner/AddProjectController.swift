@@ -11,41 +11,64 @@ import UIKit
 import EventKit
 
 class AddProjectController: UIViewController {
-    
+    // Whether to create a calendar event
     @IBOutlet weak var CalendarSwitch: UISwitch!
+    
+    // Project priority
     @IBOutlet weak var PriorityPicker: UISegmentedControl!
+    
+    // Project notes
     @IBOutlet weak var NotesTextField: UITextView!
+    
+    // Project due date
     @IBOutlet weak var DatePicker: UIDatePicker!
+    
+    // Project name
     @IBOutlet weak var ProjectName: UITextField!
-    var project:Project!
+    
+    // Project to create
     var newProject:Project!
+    
+    // Master detail form
     var delegate:MasterViewController!
     
+    // The application context used to save the new project
     let appContext = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
-    
+    // Sets up fields
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         self.NotesTextField.layer.borderColor = UIColor.lightGray.cgColor
         self.NotesTextField.layer.borderWidth = 1
+        
         self.DatePicker.backgroundColor = UIColor.gray
-        ProjectName.becomeFirstResponder()
+        
         self.view.layer.borderColor = UIColor.white.cgColor
         self.view.layer.borderWidth = 3
+        
+        ProjectName.becomeFirstResponder()
     }
     
-    @IBAction func SaveButton_OnClick(_ sender: UIButton) {
-        newProject = Project(context: appContext)
-        
+    // Saves the new project and adds an event
+    @IBAction func SaveButton_OnClick(_ sender: UIButton) {        
         if (ProjectName.text == "" || ProjectName.text == nil ){
-            //Alert
             let alert = UIAlertController(title: "Missing project name",message: "Enter a name for the project",preferredStyle: .alert)
             let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
             alert.addAction(OKAction)
             self.present(alert, animated: true, completion: nil)
+            return
         }
         
+        if Calendar.current.startOfDay(for: DatePicker.date) < Calendar.current.startOfDay(for: Date.init()){
+            let alert = UIAlertController(title: "Invalid date",message: "Start date cannot be earlier than today",preferredStyle: .alert)
+            let OKAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alert.addAction(OKAction)
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
+        newProject = Project(context: appContext)
         
         newProject.createdDate = Date.init()
         newProject.dueDate = DatePicker.date
@@ -88,13 +111,14 @@ class AddProjectController: UIViewController {
             }
         }
         
-        (UIApplication.shared.delegate as! AppDelegate).saveContext()
+        delegate.selectTableIndex(index: IndexPath(row: 0, section: 0))
         
-        delegate.selectTableIndex()
+        (UIApplication.shared.delegate as! AppDelegate).saveContext()
         
         self.dismiss(animated: true, completion: nil)
     }
     
+    // Inserts an event for the new project into the calendar
     func insertEvent(store: EKEventStore, project: Project){
         let calendars = store.calendars(for: .event)
         
@@ -122,6 +146,7 @@ class AddProjectController: UIViewController {
         }
     }
     
+    // Cancels creating a new project and closes the popup
     @IBAction func CancelButton_OnClick(_ sender: UIButton) {
        dismiss(animated: true
         , completion: nil)

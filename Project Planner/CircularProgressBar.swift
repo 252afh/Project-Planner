@@ -131,7 +131,6 @@ class CircularProgressBar: UIView {
         foregroundLayer.lineWidth = lineWidth
         foregroundLayer.fillColor = UIColor.clear.cgColor
         foregroundLayer.strokeColor = UIColor.lightGray.cgColor
-        //foregroundLayer.strokeEnd = 0
         
         self.layer.addSublayer(foregroundLayer)
         
@@ -152,18 +151,36 @@ class CircularProgressBar: UIView {
     }
     
     private func setForegroundLayerColorForSafePercent(){
-        if label.text!.isEmpty == false && isDays == false{
-            if Int(label.text!.dropLast())! == 0{
-                self.foregroundLayer.strokeColor = UIColor.lightGray.cgColor
-                return
+        if label.text!.isEmpty == false{
+            if isDays == false{
+                if Int(label.text!.dropLast())! == 0{
+                    self.foregroundLayer.strokeColor = UIColor.lightGray.cgColor
+                    return
+                }
+                
+                if Int(label.text!.dropLast())! >= self.safePercent {
+                    self.foregroundLayer.strokeColor = UIColor.green.cgColor
+                    return
+                }
+                
+                self.foregroundLayer.strokeColor = UIColor.red.cgColor
             }
-            
-            if Int(label.text!.dropLast())! >= self.safePercent {
+            else{
+                let days = Int((label.text?.components(separatedBy: " ")[0])!)
+                if let days = days{
+                    if days == 0{
+                        self.foregroundLayer.strokeColor = UIColor.lightGray.cgColor
+                        return
+                    }
+                    
+                    if days >= self.safePercent {
+                        self.foregroundLayer.strokeColor = UIColor.red.cgColor
+                        return
+                    }
+                }
+                
                 self.foregroundLayer.strokeColor = UIColor.green.cgColor
-                return
             }
-            
-            self.foregroundLayer.strokeColor = UIColor.red.cgColor
         }
     }
     
