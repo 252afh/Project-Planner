@@ -143,15 +143,20 @@ class ProjectDetailController :UIViewController {
                 
                 let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: Date.init()), to: Calendar.current.startOfDay(for: dueDate))
                 
-                if let days = days.day{
+                if var days = days.day{
                     
                     var percentage = 0.00
                     
-                    if (totalDaysInt != 0){
+                    if totalDaysInt != 0{
                         percentage = Double((Double(daysPassedInt)/Double(totalDaysInt)))
                     }
                     
-                    daysLeftCircle.safePercent = 7
+                    if Calendar.current.startOfDay(for: dueDate) < Calendar.current.startOfDay(for: Date.init()){
+                        percentage = 1.00
+                        days = totalDaysInt
+                    }
+                    
+                    daysLeftCircle.safePercent = 70
                     daysLeftCircle.lineWidth = 10
                     daysLeftCircle.setProgress(to: percentage, withAnimation: true)
                     daysLeftCircle.labelSize = 40

@@ -152,6 +152,7 @@ class EditTaskController : UIViewController{
                 (UIApplication.shared.delegate as! AppDelegate).saveContext()
                 
                 delegate.tableView.reloadData()
+                delegate.RefreshProjectProgress()
                 
                 dismiss(animated: true
                     , completion: nil)

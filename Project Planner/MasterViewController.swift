@@ -23,13 +23,10 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        navigationItem.leftBarButtonItem = editButtonItem
         if tableView.numberOfRows(inSection: 0) > 0{
             let initialIndexPath = IndexPath(row: 0, section: 0)
             self.tableView.selectRow(at: initialIndexPath, animated: true, scrollPosition:UITableView.ScrollPosition.none)
             selectTableIndex(index: initialIndexPath)
-            
-            self.performSegue(withIdentifier: "showDetail", sender: initialIndexPath)
             
             let cell = tableView.cellForRow(at: initialIndexPath)
             let color = UIView()

@@ -145,7 +145,7 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return true
     }
     
-    // Handles the table being edited
+    // Handles a task being deleted
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if (editingStyle == .delete) {
             if let cell = tableView.cellForRow(at: indexPath) as? CustomTableCell{
@@ -162,6 +162,8 @@ class DetailViewController: UIViewController, UITableViewDelegate, UITableViewDa
                         center.removePendingNotificationRequests(withIdentifiers: [(reminderId.uuidString)])
                     }
                 }
+                
+                RefreshProjectProgress()
             }
         }
     }
